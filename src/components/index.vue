@@ -155,6 +155,12 @@ import {
 import { isPc } from "../config/normal";
 import { ENOSPC } from "constants";
 import { isNullOrUndefined } from "util";
+
+import Vue from "vue";
+import VueSocketio from "vue-socket.io";
+import socketio from "socket.io-client";
+// Vue.use(VueSocketio, socketio("ws://192.168.2.105:9999"));
+
 export default {
   data() {
     return {
@@ -261,23 +267,28 @@ export default {
           var Oid = JSON.parse(JSON.stringify(identity));
 
           var publicKey = Oid.accounts[0].name;
-          console.log("++++++++" + publicKey);
           var wif = this.Ecc.seedPrivate(publicKey);
           var public_key = this.Ecc.privateToPublic(wif);
-          var sing = this.Ecc.sign("recreational_machines_game_2019", wif);
+          // var sing = this.Ecc.sign("recreational_machines_game_2019", wif);
+          var sing = this.Ecc.sign(publicKey, wif);
           identity["sing"] = sing;
           identity["public_key"] = public_key;
-          httpUserLogin(identity).then(res => {
-            let data = res.data;
-            if (data.code == 200) {
-              this.getIdentity(data.data).then(res => {});
-            } else {
-              this.$message({
-                message: data.msg,
-                type: "error"
-              });
-            }
-          });
+          httpUserLogin(identity)
+            .then(res => {
+              let data = res.data;
+              if (data.code == 200) {
+                this.getIdentity(data.data).then(res => {});
+                Vue.use(VueSocketio, socketio("ws://192.168.2.105:9999"));
+              } else {
+                this.$message({
+                  message: data.msg,
+                  type: "error"
+                });
+              }
+            })
+            .catch(err => {
+              console.log(err);
+            });
         })
         .catch(e => {
           console.log("error", e);
@@ -343,12 +354,10 @@ export default {
         }
       ];
       this.aLanguage = aLanguage;
-      console.log(this.aLanguage);
       httpGetLanguagesAll(res => {
         let data = res.data;
         if (data.code == 200) {
           this.aLanguage = aLanguage;
-          console.log(this.aLanguage);
         }
       });
     },
@@ -356,10 +365,11 @@ export default {
      *发送信息
      */
     sendMessageToServer: function() {
-      this.$socket.emit("message", { msg: "123" });
-      this.$socket.on("msg", msg => {
-        console.log("收到消息" + msg);
-      });
+      this._forgetIdentity();
+      // this.$socket.emit("message", { msg: "123" });
+      // this.$socket.on("msg", msg => {
+      //   console.log("收到消息" + msg);
+      // });
     }
   },
   /**

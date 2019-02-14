@@ -17,6 +17,7 @@
     "babel-polyfill": "^6.26.0",
     "better-scroll": "^1.14.1",
     "echarts": "^4.2.0-rc.2",
+    "echarts-stat": "^1.1.1",
     "element-ui": "^2.4.11",
     "eosjs-ecc": "^4.0.4",
     "fastclick": "^1.0.6",

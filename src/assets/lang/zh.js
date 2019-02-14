@@ -30,7 +30,13 @@ export default {
   BetAmount: '下注金额',
   CalculateMultiples: '计算倍数',
   profit: '利润',
-  BetOnTime:'下注时间',
-  ConfirmTheBet:'确认下注',
-  beComingSoon :'即将上线'
+  BetOnTime: '下注时间',
+  ConfirmTheBet: '确认下注',
+  beComingSoon: '即将上线',
+  participateInTheGame: '参与游戏',
+  getTokens: '获得代币',
+  HoldDividendsOrSellOutright: '持有分红或直接售出',
+  nextRoundIn:'下一轮',
+  Crashed:'爆炸啦，爆点为@',
+
 }

@@ -13,7 +13,7 @@
               </div>
               <div class="hs_main_game_right">
                 <ul>
-                  <li>
+                  <li style="text-align:center">
                     <img src="../../assets/image/hs_wj.png" alt="">
                     <div>
                       <strong>
@@ -24,26 +24,26 @@
 
                     <span>{{$t('player')}}</span>
                   </li>
-                  <li>
+                  <li style="text-align:center">
                     <img src="../../assets/image/hs_yx.png" alt="">
                     <strong>
                       <i></i>
                     </strong>
-                    <span>参与游戏</span>
+                    <span>{{$t('participateInTheGame')}}</span>
                   </li>
-                  <li>
+                  <li style="text-align:center">
                     <img src="../../assets/image/hs_bt.png" alt="">
                     <strong>
                       <i></i>
                     </strong>
-                    <span>获得代币</span>
+                    <span>{{$t('getTokens')}}</span>
                   </li>
-                  <li>
+                  <li style="text-align:center">
                     <img src="../../assets/image/hs_fh.png" alt="">
                     <strong>
                       <i></i>
                     </strong>
-                    <span>持有分红或直接售出</span>
+                    <span>{{$t('HoldDividendsOrSellOutright')}}</span>
                   </li>                                                      
                 </ul>
                 <img  class="hs_main_game_line" src="../../assets/image/hs_line.png" alt="">
@@ -58,7 +58,7 @@
             <div>
               <ul>
                 <li v-for="(temp,index) in aGames" :key="index">
-                  <img :src="'http://192.168.1.141:3000'+temp.img" alt="" style=" margin-top:40px;">
+                  <img :src="'http://192.168.2.105:3000'+temp.img" alt="" style=" margin-top:40px;">
                   <span >{{temp.name}}</span>
                   <img src="../../assets/image/hs_new.png" class="imgNew" alt="">
                   <i v-if="temp.status==0">即将上架</i>
@@ -112,6 +112,28 @@ export default {
   },
   mounted() {
     this._httpGetGames();
+    console.log(this.$axios);
+
+    this.$axios
+      .post(
+        "/rule/lastrule",
+        qs.stringify(
+          {
+            language_id: 1,
+            game_id: 1
+          },
+          {
+            withCredentials: true
+          }
+        )
+      )
+      .then(function(res) {
+        console.log(res);
+        //对返回的数据res进行处理的逻辑
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
 };
 </script>
@@ -333,7 +355,7 @@ export default {
             display: flex;
             flex-direction: row;
             align-items: center;
-          
+
             margin-top: 25px;
             width: 100%;
             li {

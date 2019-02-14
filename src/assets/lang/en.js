@@ -32,5 +32,10 @@ export default {
   profit: 'profit',
   BetOnTime: 'Bet on time',
   ConfirmTheBet: 'Confirm bet',
-  beComingSoon :'be coming soon '
+  beComingSoon: 'be coming soon ',
+  participateInTheGame: 'participate in the game',
+  getTokens: 'Get tokens',
+  HoldDividendsOrSellOutright: 'Hold dividends or sell outright',
+  nextRoundIn:'next round in',
+  Crashed:'Crashed@'
 }

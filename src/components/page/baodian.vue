@@ -22,6 +22,7 @@
                             </tr>
                         </thead>
                         <tbody>
+ 
                             <tr>
                                 <td>hd*****jfjj</td>
                                 <td>100.00</td>
@@ -78,72 +79,29 @@
                         <thead>
                             <tr>
                                 <th>{{$t('periods')}}</th>
-                                <th>{{$t('result')}}</th>
-                                <th>Hash</th>
-                                <th>{{$t('verify')}}</th>
+                                <th>{{$t('BetAmount')}}</th>
+                                <th>{{$t('CalculateMultiples')}}</th>
+                                <th>{{$t('profit')}}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>190015</td>
-                                <td>2.00x</td>
-                                <td>
+                           <template v-for="(temp,index) in playerData">
+                              <tr :key="index">
+                                <td>{{temp.name}}</td>
+                                <td>{{temp.bets}}</td>
+                                
+                                <td>{{temp.realmutiple==0?'-':temp.realmutiple}}</td>
+                                <td>{{temp.profit==0?'-':temp.profit}}</td>
+                                <!-- <td>
                                     <a href="" style="text-decoration:underline;color:#fefefe">121314141515151512</a>
                                 </td>
                                 <td>
                                     <a href="" class="hs_main_left_maina">
                                        {{$t('verify')}}
                                     </a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>190015</td>
-                                <td>2.00x</td>
-                                <td>
-                                    <a href="" style="text-decoration:underline;color:#fefefe">121314141515151512</a>
-                                </td>
-                                <td>
-                                    <a href="" class="hs_main_left_maina">
-                                        {{$t('verify')}}
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>190015</td>
-                                <td>2.00x</td>
-                                <td>
-                                    <a href="" style="text-decoration:underline;color:#fefefe">121314141515151512</a>
-                                </td>
-                                <td>
-                                    <a href="" class="hs_main_left_maina">
-                                         {{$t('verify')}}
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>190015</td>
-                                <td>2.00x</td>
-                                <td>
-                                    <a href="" style="text-decoration:underline;color:#fefefe">121314141515151512</a>
-                                </td>
-                                <td>
-                                    <a href="" class="hs_main_left_maina">
-                                        {{$t('verify')}}
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>190015</td>
-                                <td>2.00x</td>
-                                <td>
-                                    <a href="" style="text-decoration:underline;color:#fefefe">121314141515151512</a>
-                                </td>
-                                <td>
-                                    <a href="" class="hs_main_left_maina">
-                                        {{$t('verify')}}
-                                    </a>
-                                </td>
-                            </tr>                                                                                                                                                                                                                              
+                                </td> -->
+                              </tr>
+                            </template> 
                         </tbody>                        
                     </table>
                 </div>
@@ -162,10 +120,16 @@
                         <div class="echart1">
                             
                         </div>
-                        <div class="echart1s">
-                            <span>Next Round in...</span>
+                        <div class="echart1s" v-if="BCountdown==1" >
+                            <span>{{$t('nextRoundIn')}}...</span>
                             <span>{{Countdown}}</span>
                         </div>
+                        <div class="echart1s" v-else-if="BCountdown==2" >
+                            <span style="color:#20A53D;font-size:36px">1+++{{Countdown}}</span>
+                        </div>
+                        <div class="echart1s" v-else-if="BCountdown==3" >
+                            <span style="color:#FF3737;font-size:36px;">{{$t('Crashed')}}{{Countdown}}</span>
+                        </div>                                                
                     </div>
                     <div class="hs_main_right_top_right">
                         <div class="hs_main_right_top_right_nav">
@@ -205,14 +169,15 @@
                                 <dd class="hs_main_right_top_right_main_2">
                                     <input type="text" :placeholder="pleaseInput" v-model.number="multiple" style="color:#fff">
                                     <strong>X</strong>
-                                    <button disabled="BbetsIsClick" @click="handleBets()">{{$t('ConfirmTheBet')}}</button>
+                                    <!-- disabled="BbetsIsClick" -->
+                                    <el-button    @click="handleBets()">{{$t('ConfirmTheBet')}}</el-button>
                                 </dd>
                                 <dt class="hs_main_right_top_right_main_3">CHH{{$t('balance')}}：<span style="color:#3cb7d6">12.00</span><img src="../../assets/image/hs_help.png" alt=""></dt>
                                 <dd class="hs_main_right_top_right_main_4">*1EOS=1CHH</dd>
                             </dl>
                             <div class="button">
-                                <button disabled="disabled">{{$t('recharge')}}CHH</button>
-                                <button disabled="disabled" style="background:#4f505e">{{$t('withdraw')}}</button>
+                                <el-button @click="handleBets2()">{{$t('recharge')}}CHH</el-button>
+                                <el-button disabled="disabled" style="background:#4f505e">{{$t('withdraw')}}</el-button>
                             </div>
                         </div>                    
                     </div>
@@ -305,7 +270,6 @@
                         </tbody>
                     </table>
                     <div class="echart2"  :style="{display:bSelect2?'block':'none'}">
-
                     </div>
                 </div>
             </div>        
@@ -313,9 +277,21 @@
 </template>
 
 <script>
-import { httpRuleLastrule } from "../../service/http";
+import Vue from "vue";
+import VueSocketio from "vue-socket.io";
+import socketio from "socket.io-client";
+ Vue.use(VueSocketio, socketio("ws://192.168.2.105:9999"));
+
+import {
+  httpRuleLastrule,
+  httpPostPour,
+  httpGetUserTest,
+  httpGetUserTestcrash
+} from "../../service/http";
 import echarts from "echarts";
+import ecStat from "echarts-stat";
 import { ENODATA } from "constants";
+import { formatDate } from "../../config/date";
 export default {
   data() {
     return {
@@ -323,11 +299,18 @@ export default {
       bSelect1: true,
       bSelect2: true,
       bSelect3: true,
+      BgameLog: true,
       pleaseInput: this.$t("pleaseInput"),
       Countdown: "",
       bets: 0.1,
       multiple: 0,
-      BbetsIsClick: true
+      BbetsIsClick: true,
+      BCountdown: 0,
+      xData: [],
+      yData: [],
+      xx: new Set(),
+      gameLogData: [],
+      playerData: [] //玩家下注信息
     };
   },
   methods: {
@@ -364,50 +347,551 @@ export default {
       }
     },
     /**
-     * 确认下注
+     * 确认下注确认 下注
      */
     handleBets() {
       let data = {
         bets: this.bets,
         multiple: this.multiple
       };
-      this.$socket.emit("message", data);
+      this.$socket.emit("pour", data);
+      console.log(data);
+      // httpPostPour(this.bets, this.multiple).then(res => {
+      //   console.log(res);
+      // });
+
+      // httpGetUserTestcrash().then(res => {
+      //   console.log(res.data)
+      // });
+      // console.log(data);
+      // this.$socket.emit("pour", data);
+      // this.$socket.on("pour", msg => {
+      //   console.log("收到消息" + msg);
+      // });
+    },
+    handleBets2() {
+      // let data = {
+      //   bets: this.bets,
+      //   multiple: this.multiple
+      // };
+      // console.log(data);
+      // httpPostPour(this.bets, this.multiple).then(res => {
+      //   console.log(res);
+      // });
+      httpGetUserTest().then(res => {
+        console.log(res.data);
+      });
+      // console.log(data);
+      // this.$socket.emit("pour", data);
+      // this.$socket.on("pour", msg => {
+      //   console.log("收到消息" + msg);
+      // });
+    },
+    /**
+     * 画折线图
+     */
+    drawLine2(x, z) {
+      var a = [[0, 1.0], [(x[0] - 0) / 2, (x[1] - 1.0) / 2], [x[0], x[1]]];
+      var myRegression = ecStat.regression("exponential", a);
+      myRegression.points.sort(function(a, b) {
+        return a[0] - b[0];
+      });
+      var num = myRegression.points[myRegression.points.length - 1][0];
+      var max = myRegression.points[myRegression.points.length - 1][1];
+      if (num < 9) {
+        for (var i = 0; i < parseInt(9 - num); i++) {
+          myRegression.points.push([parseInt(num) + i + 2]);
+        }
+      }
+      this.myChart1.setOption({
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            // 坐标轴指示器，坐标轴触发有效
+            type: "line" // 默认为直线，可选为：'line' | 'shadow'
+          }
+        },
+        /**
+        grid 为直角坐标系内绘图网格，可以设置 x y x2 y2 等值。这在控制图表摆放位置上，起了重要的作用
+         */
+        grid: {
+          //间距距离左右下
+          //top: '50',
+          bottom: "45",
+          left: "5%",
+          right: "5%",
+          containLabel: true
+        },
+        calculable: true,
+        xAxis: [
+          {
+            type: "value",
+            // data: ["0s", "1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s"],
+            // data: x,
+            boundaryGap: false,
+            axisLabel: {
+              show: true,
+              textStyle: {
+                color: "#6c6c74"
+              }
+            },
+            splitLine: {
+              show: false,
+              lineStyle: {
+                color: ["#6c6c74"],
+                width: 1,
+                type: "solid"
+              }
+            }
+          }
+        ],
+
+        yAxis: {
+          //纵轴标尺固定
+          type: "value",
+          name: "销量",
+          max: null,
+          min: 1.0,
+          boundaryGap: false,
+          splitNumber: 8,
+          splitLine: {
+            show: true,
+            lineStyle: {
+              color: ["#6c6c74"],
+              width: 1,
+              type: "solid"
+            }
+          },
+          axisLabel: {
+            show: true,
+            textStyle: {
+              color: "#6c6c74"
+            }
+          }
+        },
+        // {
+        //   //纵轴标尺固定
+        //   type: "value",
+
+        //   name: "销量",
+        //   // max: 1.9,
+        //   min: 1.0,
+        //   boundaryGap: false,
+        //   splitNumber: 8,
+        //   axisLabel: {
+        //     show: true,
+        //     textStyle: {
+        //       color: "#6c6c74"
+        //     }
+        //   }
+        // }
+        series: [
+          // {
+          //   name: "Coins",
+          //   type: "line",
+          //   data: x,
+          //   // data: y,
+          //   itemStyle: {
+          //     normal: {
+          //       lineStyle: {
+          //         width: 6 // 0.1的线条是非常细的了
+          //       }
+          //     }
+          //   },
+
+          //   symbol: "none", //这句就是去掉点的
+          //   smooth: true, //这句就是让曲线变平滑的
+          //   color: ["#1ba8e8"]
+          // },
+          {
+            name: "line",
+            type: "line",
+            showSymbol: false,
+            smooth: true,
+            data: myRegression.points,
+            itemStyle: {
+              normal: {
+                lineStyle: {
+                  width: 10 // 0.1的线条是非常细的了
+                }
+              }
+            },
+            color: ["#20A53D"]
+            // markPoint: {
+            //   itemStyle: {
+            //     normal: {
+            //       color: "transparent"
+            //     }
+            //   },
+            //   label: {
+            //     normal: {
+            //       show: true,
+            //       position: "left",
+            //       formatter: myRegression.expression,
+            //       textStyle: {
+            //         color: "#333",
+            //         fontSize: 14
+            //       }
+            //     }
+            //   },
+            //   data: [
+            //     {
+            //       coord: myRegression.points[myRegression.points.length - 1]
+            //     }
+            //   ]
+            // }
+          }
+        ]
+      });
+
+      // myRegression.points.shift();
+      // myRegression.points.unshift([0, 1.0]);
+    },
+    drawLine(x, z) {
+      var a = [[0, 1.0], [(x[0] - 0) / 2, (x[1] - 1.0) / 2], [x[0], x[1]]];
+      /**
+       * 这边写一个公式 来解决数据的曲线
+       * ecstat公式
+       */
+      var myRegression = ecStat.regression("exponential", a);
+      // var myRegression = ecStat.regression("exponential", x);
+      myRegression.points.sort(function(a, b) {
+        return a[0] - b[0];
+      });
+      var num = myRegression.points[myRegression.points.length - 1][0];
+      var max = myRegression.points[myRegression.points.length - 1][1];
+      if (num < 9) {
+        for (var i = 0; i < parseInt(9 - num); i++) {
+          myRegression.points.push([parseInt(num) + i + 2]);
+        }
+      }
+
+      this.myChart1.setOption({
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            // 坐标轴指示器，坐标轴触发有效
+            type: "line" // 默认为直线，可选为：'line' | 'shadow'
+          }
+        },
+        /**
+        grid 为直角坐标系内绘图网格，可以设置 x y x2 y2 等值。这在控制图表摆放位置上，起了重要的作用
+         */
+        grid: {
+          //间距距离左右下
+          //top: '50',
+          bottom: "45",
+          left: "5%",
+          right: "5%",
+          containLabel: true
+        },
+        calculable: true,
+        xAxis: [
+          {
+            type: "value",
+            // data: ["0s", "1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s"],
+            // data: x,
+            boundaryGap: false,
+            axisLabel: {
+              show: true,
+              textStyle: {
+                color: "#6c6c74"
+              }
+            },
+            splitLine: {
+              show: false,
+              lineStyle: {
+                color: ["red"],
+                width: 1,
+                type: "solid"
+              }
+            }
+          }
+        ],
+
+        yAxis: {
+          //纵轴标尺固定
+          type: "value",
+          name: "销量",
+          max: 1.9,
+          min: 1.0,
+          boundaryGap: false,
+          splitNumber: 8,
+          axisLabel: {
+            show: true,
+            textStyle: {
+              color: "#6c6c74"
+            }
+          },
+          splitLine: {
+            show: true,
+            lineStyle: {
+              color: ["#6c6c74"],
+              width: 1,
+              type: "solid"
+            }
+          }
+        },
+
+        series: [
+          {
+            name: "line",
+            type: "line",
+            showSymbol: false,
+            smooth: true,
+            data: myRegression.points,
+            itemStyle: {
+              normal: {
+                lineStyle: {
+                  width: 10 // 0.1的线条是非常细的了
+                }
+              }
+            },
+            color: ["#20A53D"]
+          }
+        ]
+      });
+
+      // myRegression.points.shift();
+      // myRegression.points.unshift([0, 1.0]);
+    },
+    drawLineRow() {
+      let x = [],
+        y1 = [],
+        y2 = [];
+      this.gameLogData.forEach(v => {
+        y1.push(v.bets_sm);
+        y2.push(v.multiple);
+        x.push(formatDate(v.start_time * 1000));
+        console.log(formatDate(v.start_time * 1000));
+      });
+      this.myChart2.setOption({
+        // backgroundColor: "rgba(43, 62, 75, 0.5)", //背景颜色
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            // 坐标轴指示器，坐标轴触发有效
+            type: "shadow" // 默认为直线，可选为：'line' | 'shadow'
+          }
+        },
+        grid: {
+          //间距距离左右下
+          //top: '50',
+          bottom: "45",
+          left: "1%",
+          right: "1%",
+          containLabel: true
+        },
+        calculable: true,
+        xAxis: [
+          {
+            type: "category",
+            boundaryGap: false,
+            data: x.reverse(),
+            // [
+            //   "17:21",
+            //   "",
+            //   "17:22",
+            //   "",
+            //   "17:23",
+            //   "",
+            //   "17:24",
+            //   "",
+            //   "17:25",
+            //   "",
+            //   "17:26",
+            //   "",
+            //   "17:27",
+            //   "",
+            //   "17:28",
+            //   "",
+            //   "17:29",
+            //   "",
+            //   "17:30"
+            // ]
+            boundaryGap: ["5%", "5%"],
+            axisLabel: {
+              show: true,
+              textStyle: {
+                color: "#6c6c74"
+              }
+            }
+          }
+        ],
+        yAxis: [
+          {
+            type: "value",
+            axisLabel: {
+              formatter: "{value} °C"
+            },
+            axisLabel: {
+              show: true,
+              textStyle: {
+                color: "#6c6c74"
+              }
+            },
+            name: "Coins",
+            nameTextStyle: {
+              color: "#efefef"
+            }
+          },
+          {
+            type: "value",
+            axisLabel: {
+              formatter: "{value} °C"
+            },
+            axisLabel: {
+              show: true,
+              textStyle: {
+                color: "#6c6c74"
+              }
+            },
+            name: "multiple",
+            nameTextStyle: {
+              color: "#efefef"
+            }
+          }
+        ],
+        series: [
+          {
+            name: "Coins",
+            type: "bar",
+            barWidth: 15,
+
+            data: y1.reverse(),
+            // [
+            //   60,
+            //   70,
+            //   80,
+            //   114,
+            //   56,
+            //   66,
+            //   77,
+            //   118,
+            //   20,
+            //   60,
+            //   70,
+            //   80,
+            //   114,
+            //   56,
+            //   66,
+            //   77,
+            //   118,
+            //   20,
+            //   100
+            // ],
+
+            itemStyle: {
+              normal: {
+                barBorderRadius: [10, 10, 0, 0],
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                  {
+                    offset: 0,
+                    color: "#68e7f9"
+                  },
+                  {
+                    offset: 1,
+                    color: "#0e9ee5"
+                  }
+                ])
+              }
+            },
+            color: ["#1ba8e8"]
+          },
+          {
+            name: "multiple",
+            type: "line",
+            yAxisIndex: 1,
+            data: y2.reverse(),
+            //  [
+            //   3,
+            //   2,
+            //   1,
+            //   5,
+            //   6,
+            //   7,
+            //   9,
+            //   18,
+            //   9,
+            //   1,
+            //   3,
+            //   2,
+            //   1,
+            //   5,
+            //   6,
+            //   7,
+            //   9,
+            //   18,
+            //   9,
+            //   1
+            // ],
+            color: ["#f66b3b"],
+            smooth: true //这句就是让曲线变平滑的
+          }
+        ]
+      });
     }
   },
   /**
    * 接受信息
    */
   sockets: {
+    connect() {
+      console.log("socket connected");
+    },
+    bettingInformation(data) {
+      console.log(data);
+    },
+    getType(data) {
+      console.log(data.type, this.$socket);
+      this.$socket.emit(data.type);
+    },
     bets(val) {
+      this.BCountdown = 1;
+      this.BgameLog = true;
       if (val.type == "bets") {
         var str = "游戏下注时间，倒计时：" + val.times;
         //   console.log(str);
         this.Countdown = val.times + "s";
-        this.$socket.emit(val.type);
+        //  this.$socket.emit(val.type);
       } else {
         ///   console.log(str.type);
-        this.$socket.emit(val.type);
+        //  this.$socket.emit(val.type);
       }
     },
     /**
      * 游戏开始以后获得游戏数据
      */
     crash(data) {
+      this.BCountdown = 2;
       if (data.type == "crash") {
-        var str = `游戏开始，X轴${data.crashTime}，Y轴${data.crashCrash}`;
-        this.Countdown = "游戏开始";
-        console.log(data.data);
+        this.xData.length = 0;
+        this.yData.length = 0;
         var startTime = 1;
+
+        //[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        //[0,2,4,6,8,10,12,14,16,18,20]
+        //[0,10,20,30,40,50]
+        var max = data.data[1];
+        this.Countdown = max;
+        var OyAxis;
+        if (max > 1.9) {
+          OyAxis = true;
+          this.drawLine2(data.data, OyAxis);
+        } else {
+          OyAxis = false;
+          this.drawLine(data.data, OyAxis);
+        }
         var startTimeFun = setInterval(() => {
           if (startTime <= 0.1) {
             clearInterval(startTimeFun);
           } else {
-            this.$socket.emit(data.type);
+            //  this.$socket.emit(data.type);
             startTime = (startTime - 0.9).toFixed(1);
           }
         }, 100);
       } else if (data.type == "over") {
-        this.$socket.emit(data.type);
+        //  this.$socket.emit(data.type);
       }
     },
     /**
@@ -415,6 +899,10 @@ export default {
      */
     waiting(data) {
       if (data.type == "waiting") {
+        this.xData.length = 0;
+        this.yData.length = 0;
+        this.drawLine([0, 0], false);
+        this.xx.clear();
         var str = "等待开奖";
         this.Countdown = str;
         //  $("#socket_conn").html(str);
@@ -423,29 +911,32 @@ export default {
           if (startTime <= 0.1) {
             clearInterval(startTimeFun);
           } else {
-            this.$socket.emit(data.type);
+            //   this.$socket.emit(data.type);
             startTime = (startTime - 0.9).toFixed(1);
           }
         }, 100);
       } else {
         console.log(data.type);
-        this.$socket.emit(data.type);
+        //   this.$socket.emit(data.type);
       }
     },
     /**
      * 爆炸了
      */
     over(data) {
+      if (this.BgameLog) {
+        this.$socket.emit("gameLog");
+        this.BgameLog = false;
+      }
+      this.BCountdown = 3;
       if (data.type == "over") {
-        var str = `爆炸啦，爆点为${data.crashCrash}`;
-        this.Countdown = str;
         // $("#socket_conn").html(str);
         var startTime = 1;
         var startTimeFun = setInterval(() => {
           if (startTime <= 0.1) {
             clearInterval(startTimeFun);
           } else {
-            this.$socket.emit(data.type);
+            //   this.$socket.emit(data.type);
             startTime = (startTime - 0.9).toFixed(1);
           }
         }, 100);
@@ -458,7 +949,6 @@ export default {
      */
     start(data) {
       if (data.type == "start") {
-        console.log("开始");
         var str = data.msg;
         this.Countdown = str;
         // $("#socket_conn").html(str);
@@ -474,221 +964,121 @@ export default {
       } else if (data.type == "bets") {
         this.$socket.emit(data.type);
       }
+    },
+    /**
+     *玩家投注信息
+     */
+    bettingInformation(data) {
+      this.playerData = data.playerData;
+      console.log("玩家投注信息");
+    },
+    /**
+    玩家历史记录
+     */
+    myGameLog(data) {
+      console.log("玩家历史记录" + data);
+    },
+    /**
+     * 得到爆点历史记录
+     */
+    gameLog(data) {
+      console.log("爆点历史记录" + data);
+      this.gameLogData = data.gameLogData;
+      this.drawLineRow();
     }
   },
   updated() {
     this.pleaseInput = this.$t("pleaseInput");
   },
   mounted() {
-    console.log(this.pleaseInput);
     this._httpRuleLastrule(1, 1);
+    this.$socket.emit("gameLog");
     this.myChart2 = echarts.init(document.querySelector(".echart2"));
-    this.myChart2.setOption({
-      // backgroundColor: "rgba(43, 62, 75, 0.5)", //背景颜色
-      tooltip: {
-        trigger: "axis",
-        axisPointer: {
-          // 坐标轴指示器，坐标轴触发有效
-          type: "shadow" // 默认为直线，可选为：'line' | 'shadow'
-        }
-      },
-      grid: {
-        //间距距离左右下
-        //top: '50',
-        bottom: "45",
-        left: "1%",
-        right: "1%",
-        containLabel: true
-      },
-      calculable: true,
-      xAxis: [
-        {
-          type: "category",
-          boundaryGap: false,
-          data: [
-            "17:21",
-            "",
-            "17:22",
-            "",
-            "17:23",
-            "",
-            "17:24",
-            "",
-            "17:25",
-            "",
-            "17:26",
-            "",
-            "17:27",
-            "",
-            "17:28",
-            "",
-            "17:29",
-            "",
-            "17:30"
-          ],
-          boundaryGap: ["5%", "5%"],
-          axisLabel: {
-            show: true,
-            textStyle: {
-              color: "#6c6c74"
-            }
-          }
-        }
-      ],
-      yAxis: [
-        {
-          type: "value",
-          axisLabel: {
-            formatter: "{value} °C"
-          },
-          axisLabel: {
-            show: true,
-            textStyle: {
-              color: "#6c6c74"
-            }
-          },
-          name: "Coins",
-          nameTextStyle: {
-            color: "#efefef"
-          }
-        },
-        {
-          type: "value",
-          axisLabel: {
-            formatter: "{value} °C"
-          },
-          axisLabel: {
-            show: true,
-            textStyle: {
-              color: "#6c6c74"
-            }
-          },
-          name: "multiple",
-          nameTextStyle: {
-            color: "#efefef"
-          }
-        }
-      ],
-      series: [
-        {
-          name: "Coins",
-          type: "bar",
-          barWidth: 15,
-
-          data: [
-            60,
-            70,
-            80,
-            114,
-            56,
-            66,
-            77,
-            118,
-            20,
-            60,
-            70,
-            80,
-            114,
-            56,
-            66,
-            77,
-            118,
-            20,
-            100
-          ],
-
-          itemStyle: {
-            normal: {
-              barBorderRadius: [10, 10, 0, 0],
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                {
-                  offset: 0,
-                  color: "#68e7f9"
-                },
-                {
-                  offset: 1,
-                  color: "#0e9ee5"
-                }
-              ])
-            }
-          },
-          color: ["#1ba8e8"]
-        },
-        {
-          name: "multiple",
-          type: "line",
-          yAxisIndex: 1,
-          data: [3, 2, 1, 5, 6, 7, 9, 18, 9, 1, 3, 2, 1, 5, 6, 7, 9, 18, 9, 1],
-          color: ["#f66b3b"],
-          smooth: true //这句就是让曲线变平滑的
-        }
-      ]
-    });
+    this.drawLineRow();
     this.myChart1 = echarts.init(document.querySelector(".echart1"));
-    this.myChart1.setOption({
-      // backgroundColor: "rgba(43, 62, 75, 0.5)", //背景颜色
-      tooltip: {
-        trigger: "axis",
-        axisPointer: {
-          // 坐标轴指示器，坐标轴触发有效
-          type: "line" // 默认为直线，可选为：'line' | 'shadow'
-        }
-      },
-      grid: {
-        //间距距离左右下
-        //top: '50',
-        bottom: "45",
-        left: "1%",
-        right: "1%",
-        containLabel: true
-      },
-      calculable: true,
-      xAxis: [
-        {
-          type: "category",
-          boundaryGap: false,
-          data: ["1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s", "10s"],
-          // boundaryGap: ["5%", "5%"],
-          axisLabel: {
-            show: true,
-            textStyle: {
-              color: "#6c6c74"
-            }
-          }
-        }
-      ],
-      yAxis: [
-        {
-          type: "value",
-          axisLabel: {
-            formatter: "{value} °C"
-          },
-          axisLabel: {
-            show: true,
-            textStyle: {
-              color: "#6c6c74"
-            }
-          }
-        }
-      ],
-      series: [
-        {
-          name: "Coins",
-          type: "line",
-          data: [0, 0.5, 1.1, 1.3, 1.4, 1.44, 1.5, 1.61, 1.66, 1.9],
-          itemStyle: {
-            normal: {
-              lineStyle: {
-                width: 6 // 0.1的线条是非常细的了
-              }
-            }
-          },
-          symbol: "none", //这句就是去掉点的
-          smooth: true, //这句就是让曲线变平滑的
-          color: ["#1ba8e8"]
-        }
-      ]
-    });
+    // this.myChart1.setOption({
+    //   // backgroundColor: "rgba(43, 62, 75, 0.5)", //背景颜色
+    //   tooltip: {
+    //     trigger: "axis",
+    //     axisPointer: {
+    //       // 坐标轴指示器，坐标轴触发有效
+    //       type: "line" // 默认为直线，可选为：'line' | 'shadow'
+    //     }
+    //   },
+    //   grid: {
+    //     //间距距离左右下
+    //     //top: '50',
+    //     bottom: "45",
+    //     left: "1%",
+    //     right: "1%",
+    //     containLabel: true
+    //   },
+    //   calculable: true,
+    //   xAxis: [
+    //     {
+    //       type: "category",
+    //       data: ["0s", "1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s"],
+    //       boundaryGap: false,
+    //       axisLabel: {
+    //         show: true,
+    //         textStyle: {
+    //           color: "#6c6c74"
+    //         }
+    //       }
+    //     }
+    //   ],
+    //   // yAxis: [
+    //   //   {
+    //   //     type: "value",
+    //   //     axisLabel: {
+    //   //       formatter: "{value} °C"
+    //   //     },
+    //   //     axisLabel: {
+    //   //       show: true,
+    //   //       textStyle: {
+    //   //         color: "#6c6c74"
+    //   //       }
+    //   //     }
+    //   //   }
+    //   // ],
+
+    //   yAxis: {
+    //     //纵轴标尺固定
+    //     type: "value",
+
+    //     name: "销量",
+    //     max: 1.9,
+    //     min: 1.1,
+    //     boundaryGap: false,
+    //     splitNumber: 8,
+    //     axisLabel: {
+    //       show: true,
+    //       textStyle: {
+    //         color: "#6c6c74"
+    //       }
+    //     }
+    //   },
+
+    //   series: [
+    //     {
+    //       name: "Coins",
+    //       type: "line",
+    //       //  data: [0, 0.5, 1.1, 1.3, 1.4, 1.44, 1.5, 1.61, 1.66, 1.9],
+    //       data: [0, 0.6, 1.1, 1.3, 1.4, 1.44, 1.5, 1.61, 1.66, 1.9],
+
+    //       itemStyle: {
+    //         normal: {
+    //           lineStyle: {
+    //             width: 6 // 0.1的线条是非常细的了
+    //           }
+    //         }
+    //       },
+    //       symbol: "none", //这句就是去掉点的
+    //       smooth: true, //这句就是让曲线变平滑的
+    //       color: ["#1ba8e8"]
+    //     }
+    //   ]
+    // });
     window.onresize = () => {
       this.myChart2.resize();
       this.myChart1.resize();
@@ -930,6 +1320,7 @@ export default {
                 height: 28px;
                 border: 1px solid #dbdbde;
                 text-align: center;
+                cursor: pointer;
               }
               input {
                 text-align: center;
@@ -1086,7 +1477,7 @@ export default {
 @media (max-width: 1599px) and (min-width: 577px) {
   .baodian {
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     align-items: center;
     padding: 20px;
     .hs_main_left {
@@ -1475,7 +1866,7 @@ export default {
 @media (max-width: 576px) {
   .baodian {
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     align-items: center;
     padding: 20px;
     .hs_main_left {

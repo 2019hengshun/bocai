@@ -22,8 +22,12 @@ import VueSocketio from 'vue-socket.io';
 import './assets/css/iconfont.css';
 
 import socketio from 'socket.io-client';
+
+import axios from 'axios';
+axios.defaults.withCredentials=true;
+Vue.prototype.$axios = axios;
 //Vue.use(VueSocketio, socketio('ws://192.168.1.141:9999'));
-Vue.use(VueSocketio, socketio('ws://192.168.1.149:9999'))
+
 
 Vue.use(Vuex)
 Vue.use(VueI18n)
@@ -62,12 +66,115 @@ new Vue({
   },
   i18n,
   template: '<App/>',
-  sockets: {
-    connect: function () {
-      console.log('socket connected');
-    },
-    // msg: function (val) {
-    //   console.log('接收到服务端消息', val);
-    // }
-  }
+  // sockets: {
+  //   connect: function () {
+  //     console.log('socket connected');
+  //   },
+  //   getType(data) {
+  //     console.log(data.type, this.$socket)
+  //     this.$socket.emit(data.type);
+  //   },
+  //   bets(val) {
+  //     console.log("bets");
+  //     if (val.type == "bets") {
+  //       var str = "游戏下注时间，倒计时：" + val.times;
+  //       //   console.log(str);
+  //       this.Countdown = val.times + "s";
+  //       this.$socket.emit(val.type);
+  //     } else {
+  //       ///   console.log(str.type);
+  //       this.$socket.emit(val.type);
+  //     }
+  //   },
+  //   /**
+  //    * 游戏开始以后获得游戏数据
+  //    */
+  //   crash(data) {
+  //     console.log("crash");
+  //     if (data.type == "crash") {
+  //       var str = `游戏开始，X轴${data.crashTime}，Y轴${data.crashCrash}`;
+  //       this.Countdown = "游戏开始";
+  //       console.log(data.data);
+  //       var startTime = 1;
+  //       var startTimeFun = setInterval(() => {
+  //         if (startTime <= 0.1) {
+  //           clearInterval(startTimeFun);
+  //         } else {
+  //           this.$socket.emit(data.type);
+  //           startTime = (startTime - 0.9).toFixed(1);
+  //         }
+  //       }, 100);
+  //     } else if (data.type == "over") {
+  //       this.$socket.emit(data.type);
+  //     }
+  //   },
+  //   /**
+  //    * 等待开奖
+  //    */
+  //   waiting(data) {
+  //     console.log("waiting");
+  //     if (data.type == "waiting") {
+  //       var str = "等待开奖";
+  //       this.Countdown = str;
+  //       //  $("#socket_conn").html(str);
+  //       var startTime = 1;
+  //       var startTimeFun = setInterval(() => {
+  //         if (startTime <= 0.1) {
+  //           clearInterval(startTimeFun);
+  //         } else {
+  //           this.$socket.emit(data.type);
+  //           startTime = (startTime - 0.9).toFixed(1);
+  //         }
+  //       }, 100);
+  //     } else {
+  //       console.log(data.type);
+  //       this.$socket.emit(data.type);
+  //     }
+  //   },
+  //   /**
+  //    * 爆炸了
+  //    */
+  //   over(data) {
+  //     console.log("over");
+  //     if (data.type == "over") {
+  //       var str = `爆炸啦，爆点为${data.crashCrash}`;
+  //       this.Countdown = str;
+  //       // $("#socket_conn").html(str);
+  //       var startTime = 1;
+  //       var startTimeFun = setInterval(() => {
+  //         if (startTime <= 0.1) {
+  //           clearInterval(startTimeFun);
+  //         } else {
+  //           this.$socket.emit(data.type);
+  //           startTime = (startTime - 0.9).toFixed(1);
+  //         }
+  //       }, 100);
+  //     } else if (data.type == "start") {
+  //       this.$socket.emit(data.type);
+  //     }
+  //   },
+  //   /**
+  //    * 开始
+  //    */
+  //   start(data) {
+  //     console.log("start");
+  //     if (data.type == "start") {
+  //       console.log("开始");
+  //       var str = data.msg;
+  //       this.Countdown = str;
+  //       // $("#socket_conn").html(str);
+  //       var startTime = 1;
+  //       var startTimeFun = setInterval(() => {
+  //         if (startTime <= 0.1) {
+  //           clearInterval(startTimeFun);
+  //         } else {
+  //           this.$socket.emit(data.type);
+  //           startTime = (startTime - 0.9).toFixed(1);
+  //         }
+  //       }, 100);
+  //     } else if (data.type == "bets") {
+  //       this.$socket.emit(data.type);
+  //     }
+  //   }
+  // }
 })
