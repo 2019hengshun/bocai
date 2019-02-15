@@ -143,7 +143,6 @@ export function httpGetUserTestcrash() {
     withCredentials: true, //可以带cookie的认证
     headers: {
       'set-cookie': allCookies, //设置跨域头部
-
     }
   })
 }

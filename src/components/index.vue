@@ -278,7 +278,9 @@ export default {
               let data = res.data;
               if (data.code == 200) {
                 this.getIdentity(data.data).then(res => {});
-                Vue.use(VueSocketio, socketio("ws://192.168.2.105:9999"));
+                console.log(this.$socket.close())
+                this.$socket.close();
+                this.$socket.open('ws://192.168.2.105:9999');                
               } else {
                 this.$message({
                   message: data.msg,

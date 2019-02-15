@@ -20,6 +20,7 @@
                                 <th>{{$t('CalculateMultiples')}}</th>
                                 <th>{{$t('profit')}}</th>
                             </tr>
+
                         </thead>
                         <tbody>
  
@@ -78,7 +79,7 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>{{$t('periods')}}</th>
+                                <th>{{$t('player')}}</th>
                                 <th>{{$t('BetAmount')}}</th>
                                 <th>{{$t('CalculateMultiples')}}</th>
                                 <th>{{$t('profit')}}</th>
@@ -90,8 +91,8 @@
                                 <td>{{temp.name}}</td>
                                 <td>{{temp.bets}}</td>
                                 
-                                <td>{{temp.realmutiple==0?'-':temp.realmutiple}}</td>
-                                <td>{{temp.profit==0?'-':temp.profit}}</td>
+                                <td>{{temp.realmultiple==0?'-':temp.realmultiple}}</td>
+                                <td>{{temp.profit}}+{{temp.profit==0?'-':temp.profit}}</td>
                                 <!-- <td>
                                     <a href="" style="text-decoration:underline;color:#fefefe">121314141515151512</a>
                                 </td>
@@ -170,7 +171,7 @@
                                     <input type="text" :placeholder="pleaseInput" v-model.number="multiple" style="color:#fff">
                                     <strong>X</strong>
                                     <!-- disabled="BbetsIsClick" -->
-                                    <el-button    @click="handleBets()">{{$t('ConfirmTheBet')}}</el-button>
+                                    <el-button :disabled="Bbets" :style="{background:Bbets?'#fab6b6':'#3cb7d6'}"   @click="handleBets()">{{$t('ConfirmTheBet')}}</el-button>
                                 </dd>
                                 <dt class="hs_main_right_top_right_main_3">CHH{{$t('balance')}}：<span style="color:#3cb7d6">12.00</span><img src="../../assets/image/hs_help.png" alt=""></dt>
                                 <dd class="hs_main_right_top_right_main_4">*1EOS=1CHH</dd>
@@ -207,66 +208,30 @@
                             </el-pagination>
                         </div>
                     </div>
-                    <table  :style="{display:!bSelect2?'block':'none'}">
+                    <table  :style="{display:!bSelect2?'block':'none'}" >
                         <thead>
                             <tr>
                                 <th>{{$t('BetOnTime')}}</th>
                                 <th>{{$t('BetAmount')}}</th>
                                 <th>{{$t('CalculateMultiples')}}</th>
-                                <th>{{$t('CalculateMultiples')}}</th>
                                 <th>{{$t('profit')}}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>2019-01-15 15:30</td>
-                                <td style="color:#40abc7">100.00</td>
-                                <td>1.00x</td>
-                                <td>有</td>
-                                <td style="color:#3aa526">500.0000</td>
-                            </tr>
-                            <tr>
-                                <td>2019-01-15 15:30</td>
-                                <td style="color:#40abc7">100.00</td>
-                                <td>1.00x</td>
-                                <td>有</td>
-                                <td style="color:#3aa526">500.0000</td>
-                            </tr>
-                            <tr>
-                                <td>2019-01-15 15:30</td>
-                                <td style="color:#40abc7">100.00</td>
-                                <td>1.00x</td>
-                                <td>有</td>
-                                <td style="color:#3aa526">500.0000</td>
-                            </tr>
-                            <tr>
-                                <td>2019-01-15 15:30</td>
-                                <td style="color:#40abc7">100.00</td>
-                                <td>1.00x</td>
-                                <td>有</td>
-                                <td style="color:#3aa526">500.0000</td>
-                            </tr>
-                            <tr>
-                                <td>2019-01-15 15:30</td>
-                                <td style="color:#40abc7">100.00</td>
-                                <td>1.00x</td>
-                                <td>有</td>
-                                <td style="color:#3aa526">500.0000</td>
-                            </tr>
-                            <tr>
-                                <td>2019-01-15 15:30</td>
-                                <td style="color:#40abc7">100.00</td>
-                                <td>1.00x</td>
-                                <td>有</td>
-                                <td style="color:#3aa526">500.0000</td>
-                            </tr>
-                            <tr>
-                                <td>2019-01-15 15:30</td>
-                                <td style="color:#40abc7">100.00</td>
-                                <td>1.00x</td>
-                                <td>有</td>
-                                <td style="color:#3aa526">500.0000</td>
-                            </tr>                                                        
+                           <template v-for="(temp,index) in selfPlayData">
+                              <tr :key="index">
+                               <td>
+                                 <span v-if="temp.log_time!==0">
+                                    {{temp.log_time|dateServer}}
+                                 </span>
+                                </td>
+                                <td style="color:#40abc7">{{temp.bets}}</td>
+                                <td>{{temp.real_multiple}}x</td>
+                            
+                                <td style="color:#3aa526">{{temp.user_profit}}</td>                                
+                              </tr>
+                            </template>                           
+                                                      
                         </tbody>
                     </table>
                     <div class="echart2"  :style="{display:bSelect2?'block':'none'}">
@@ -280,7 +245,7 @@
 import Vue from "vue";
 import VueSocketio from "vue-socket.io";
 import socketio from "socket.io-client";
- Vue.use(VueSocketio, socketio("ws://192.168.2.105:9999"));
+Vue.use(VueSocketio, socketio("ws://192.168.2.105:9999"));
 
 import {
   httpRuleLastrule,
@@ -300,6 +265,7 @@ export default {
       bSelect2: true,
       bSelect3: true,
       BgameLog: true,
+      Bbets: false,
       pleaseInput: this.$t("pleaseInput"),
       Countdown: "",
       bets: 0.1,
@@ -310,7 +276,8 @@ export default {
       yData: [],
       xx: new Set(),
       gameLogData: [],
-      playerData: [] //玩家下注信息
+      playerData: [], //玩家下注信息
+      selfPlayData:[]
     };
   },
   methods: {
@@ -356,6 +323,7 @@ export default {
       };
       this.$socket.emit("pour", data);
       console.log(data);
+      this.Bbets = true;
       // httpPostPour(this.bets, this.multiple).then(res => {
       //   console.log(res);
       // });
@@ -403,6 +371,8 @@ export default {
           myRegression.points.push([parseInt(num) + i + 2]);
         }
       }
+      myRegression.points.shift();
+      myRegression.points.unshift([0, 1.0]);
       this.myChart1.setOption({
         tooltip: {
           trigger: "axis",
@@ -469,40 +439,7 @@ export default {
             }
           }
         },
-        // {
-        //   //纵轴标尺固定
-        //   type: "value",
-
-        //   name: "销量",
-        //   // max: 1.9,
-        //   min: 1.0,
-        //   boundaryGap: false,
-        //   splitNumber: 8,
-        //   axisLabel: {
-        //     show: true,
-        //     textStyle: {
-        //       color: "#6c6c74"
-        //     }
-        //   }
-        // }
         series: [
-          // {
-          //   name: "Coins",
-          //   type: "line",
-          //   data: x,
-          //   // data: y,
-          //   itemStyle: {
-          //     normal: {
-          //       lineStyle: {
-          //         width: 6 // 0.1的线条是非常细的了
-          //       }
-          //     }
-          //   },
-
-          //   symbol: "none", //这句就是去掉点的
-          //   smooth: true, //这句就是让曲线变平滑的
-          //   color: ["#1ba8e8"]
-          // },
           {
             name: "line",
             type: "line",
@@ -517,29 +454,6 @@ export default {
               }
             },
             color: ["#20A53D"]
-            // markPoint: {
-            //   itemStyle: {
-            //     normal: {
-            //       color: "transparent"
-            //     }
-            //   },
-            //   label: {
-            //     normal: {
-            //       show: true,
-            //       position: "left",
-            //       formatter: myRegression.expression,
-            //       textStyle: {
-            //         color: "#333",
-            //         fontSize: 14
-            //       }
-            //     }
-            //   },
-            //   data: [
-            //     {
-            //       coord: myRegression.points[myRegression.points.length - 1]
-            //     }
-            //   ]
-            // }
           }
         ]
       });
@@ -565,7 +479,8 @@ export default {
           myRegression.points.push([parseInt(num) + i + 2]);
         }
       }
-
+      myRegression.points.shift();
+      myRegression.points.unshift([0, 1.0]);
       this.myChart1.setOption({
         tooltip: {
           trigger: "axis",
@@ -688,27 +603,6 @@ export default {
             type: "category",
             boundaryGap: false,
             data: x.reverse(),
-            // [
-            //   "17:21",
-            //   "",
-            //   "17:22",
-            //   "",
-            //   "17:23",
-            //   "",
-            //   "17:24",
-            //   "",
-            //   "17:25",
-            //   "",
-            //   "17:26",
-            //   "",
-            //   "17:27",
-            //   "",
-            //   "17:28",
-            //   "",
-            //   "17:29",
-            //   "",
-            //   "17:30"
-            // ]
             boundaryGap: ["5%", "5%"],
             axisLabel: {
               show: true,
@@ -759,28 +653,6 @@ export default {
             barWidth: 15,
 
             data: y1.reverse(),
-            // [
-            //   60,
-            //   70,
-            //   80,
-            //   114,
-            //   56,
-            //   66,
-            //   77,
-            //   118,
-            //   20,
-            //   60,
-            //   70,
-            //   80,
-            //   114,
-            //   56,
-            //   66,
-            //   77,
-            //   118,
-            //   20,
-            //   100
-            // ],
-
             itemStyle: {
               normal: {
                 barBorderRadius: [10, 10, 0, 0],
@@ -803,28 +675,6 @@ export default {
             type: "line",
             yAxisIndex: 1,
             data: y2.reverse(),
-            //  [
-            //   3,
-            //   2,
-            //   1,
-            //   5,
-            //   6,
-            //   7,
-            //   9,
-            //   18,
-            //   9,
-            //   1,
-            //   3,
-            //   2,
-            //   1,
-            //   5,
-            //   6,
-            //   7,
-            //   9,
-            //   18,
-            //   9,
-            //   1
-            // ],
             color: ["#f66b3b"],
             smooth: true //这句就是让曲线变平滑的
           }
@@ -847,6 +697,8 @@ export default {
       this.$socket.emit(data.type);
     },
     bets(val) {
+      this.Bbets = false;
+      this.drawLine([0, 0], false);
       this.BCountdown = 1;
       this.BgameLog = true;
       if (val.type == "bets") {
@@ -863,15 +715,12 @@ export default {
      * 游戏开始以后获得游戏数据
      */
     crash(data) {
+      this.Bbets = true;
       this.BCountdown = 2;
       if (data.type == "crash") {
         this.xData.length = 0;
         this.yData.length = 0;
         var startTime = 1;
-
-        //[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-        //[0,2,4,6,8,10,12,14,16,18,20]
-        //[0,10,20,30,40,50]
         var max = data.data[1];
         this.Countdown = max;
         var OyAxis;
@@ -924,10 +773,8 @@ export default {
      * 爆炸了
      */
     over(data) {
-      if (this.BgameLog) {
-        this.$socket.emit("gameLog");
-        this.BgameLog = false;
-      }
+      this.playerData = [];
+
       this.BCountdown = 3;
       if (data.type == "over") {
         // $("#socket_conn").html(str);
@@ -948,6 +795,11 @@ export default {
      * 开始
      */
     start(data) {
+      if (this.BgameLog) {
+        this.$socket.emit("gameLog");
+        this.$socket.emit("myGameLog");
+        this.BgameLog = false;
+      }
       if (data.type == "start") {
         var str = data.msg;
         this.Countdown = str;
@@ -970,13 +822,16 @@ export default {
      */
     bettingInformation(data) {
       this.playerData = data.playerData;
-      console.log("玩家投注信息");
+      if (data.playerData[0]) {
+        console.log(data.playerData[0]["profit"]);
+      }
     },
     /**
     玩家历史记录
      */
     myGameLog(data) {
-      console.log("玩家历史记录" + data);
+      console.log(JSON.stringify(data));
+      this.selfPlayData = data.myGameLog;
     },
     /**
      * 得到爆点历史记录
@@ -993,96 +848,14 @@ export default {
   mounted() {
     this._httpRuleLastrule(1, 1);
     this.$socket.emit("gameLog");
+    this.$socket.emit("myGameLog");
     this.myChart2 = echarts.init(document.querySelector(".echart2"));
     this.drawLineRow();
     this.myChart1 = echarts.init(document.querySelector(".echart1"));
-    // this.myChart1.setOption({
-    //   // backgroundColor: "rgba(43, 62, 75, 0.5)", //背景颜色
-    //   tooltip: {
-    //     trigger: "axis",
-    //     axisPointer: {
-    //       // 坐标轴指示器，坐标轴触发有效
-    //       type: "line" // 默认为直线，可选为：'line' | 'shadow'
-    //     }
-    //   },
-    //   grid: {
-    //     //间距距离左右下
-    //     //top: '50',
-    //     bottom: "45",
-    //     left: "1%",
-    //     right: "1%",
-    //     containLabel: true
-    //   },
-    //   calculable: true,
-    //   xAxis: [
-    //     {
-    //       type: "category",
-    //       data: ["0s", "1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s"],
-    //       boundaryGap: false,
-    //       axisLabel: {
-    //         show: true,
-    //         textStyle: {
-    //           color: "#6c6c74"
-    //         }
-    //       }
-    //     }
-    //   ],
-    //   // yAxis: [
-    //   //   {
-    //   //     type: "value",
-    //   //     axisLabel: {
-    //   //       formatter: "{value} °C"
-    //   //     },
-    //   //     axisLabel: {
-    //   //       show: true,
-    //   //       textStyle: {
-    //   //         color: "#6c6c74"
-    //   //       }
-    //   //     }
-    //   //   }
-    //   // ],
-
-    //   yAxis: {
-    //     //纵轴标尺固定
-    //     type: "value",
-
-    //     name: "销量",
-    //     max: 1.9,
-    //     min: 1.1,
-    //     boundaryGap: false,
-    //     splitNumber: 8,
-    //     axisLabel: {
-    //       show: true,
-    //       textStyle: {
-    //         color: "#6c6c74"
-    //       }
-    //     }
-    //   },
-
-    //   series: [
-    //     {
-    //       name: "Coins",
-    //       type: "line",
-    //       //  data: [0, 0.5, 1.1, 1.3, 1.4, 1.44, 1.5, 1.61, 1.66, 1.9],
-    //       data: [0, 0.6, 1.1, 1.3, 1.4, 1.44, 1.5, 1.61, 1.66, 1.9],
-
-    //       itemStyle: {
-    //         normal: {
-    //           lineStyle: {
-    //             width: 6 // 0.1的线条是非常细的了
-    //           }
-    //         }
-    //       },
-    //       symbol: "none", //这句就是去掉点的
-    //       smooth: true, //这句就是让曲线变平滑的
-    //       color: ["#1ba8e8"]
-    //     }
-    //   ]
-    // });
+    
     window.onresize = () => {
       this.myChart2.resize();
       this.myChart1.resize();
-      //myChart1.resize();    //若有多个图表变动，可多写
     };
   }
 };
