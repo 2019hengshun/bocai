@@ -245,8 +245,10 @@
 import Vue from "vue";
 import VueSocketio from "vue-socket.io";
 import socketio from "socket.io-client";
-Vue.use(VueSocketio, socketio("ws://192.168.2.105:9999"));
-
+import Eos from "eosjs";
+import { mapGetters, mapActions } from "vuex";
+Vue.use(VueSocketio, socketio("ws://192.168.2.109:9999"));
+import "../../config/deploy";
 import {
   httpRuleLastrule,
   httpPostPour,
@@ -277,8 +279,11 @@ export default {
       xx: new Set(),
       gameLogData: [],
       playerData: [], //玩家下注信息
-      selfPlayData:[]
+      selfPlayData: []
     };
+  },
+  computed: {
+    ...mapGetters(["account"])
   },
   methods: {
     /**
@@ -338,22 +343,67 @@ export default {
       // });
     },
     handleBets2() {
-      // let data = {
-      //   bets: this.bets,
-      //   multiple: this.multiple
-      // };
-      // console.log(data);
-      // httpPostPour(this.bets, this.multiple).then(res => {
-      //   console.log(res);
+      // httpGetUserTest().then(res => {
+      //   console.log(res.data);
       // });
-      httpGetUserTest().then(res => {
-        console.log(res.data);
-      });
-      // console.log(data);
-      // this.$socket.emit("pour", data);
-      // this.$socket.on("pour", msg => {
-      //   console.log("收到消息" + msg);
+      var account = this.account;
+      const eosOptions = {
+        broadcast: true,
+        chainId:
+          "3670d2e3d104ed6d78f49fc4c5be79ba768e8900517cb845e3f1ab4d9c5a7e46"
+      };
+      //获取EOS instance
+      const eos = scatter.eos(network, Eos, eosOptions, "http");
+      window.eos = eos;
+      console.log(eos);
+      const requiredFields = {
+        accounts: [network]
+      };
+      const options = {
+        authorization: [`${account.name}@${account.authority}`]
+      };
+
+      //
+      const amount = "1.0000 EOS";
+      // eos.contract('deposit',{requiredFields}).then(contract => {
+      //     contract.transfer(account.name, "test2", amount, 'buycandles|40',options).then(trx => {
+      //         console.log("2.获取签名后的交易，前端需要将此数据传入后台", trx);
+      //     }).catch(e => {
+      //         console.log("error", e);
+      //         if (e.toString().includes("overdrawn balance")) {
+      //             alert("No money, go back to Getting Started and refill")
+      //         }
+      //     })
       // });
+
+      const transactionOptions = {
+        authorization: [`${account.name}@${account.authority}`]
+      };
+
+      eos
+        .transfer(
+          account.name,
+          "deposit",
+          "1.0000 EOS",
+          "memo",
+          transactionOptions
+        )
+        .then(trx => {
+          // That's it!
+          console.log(`Transaction ID: ${trx.transaction_id}`);
+          var res1 = eos.getCurrencyBalance(
+            "eosio.token",
+            "eoscrashgame",
+            "EOS"
+          );
+          console.log("现在奖池里有");
+          res1.then(res => {
+            console.log(res);
+          });
+        })
+        .catch(error => {
+          console.error(error);
+        });
     },
     /**
      * 画折线图
@@ -852,7 +902,7 @@ export default {
     this.myChart2 = echarts.init(document.querySelector(".echart2"));
     this.drawLineRow();
     this.myChart1 = echarts.init(document.querySelector(".echart1"));
-    
+
     window.onresize = () => {
       this.myChart2.resize();
       this.myChart1.resize();

@@ -58,7 +58,7 @@
             <div>
               <ul>
                 <li v-for="(temp,index) in aGames" :key="index">
-                  <img :src="'http://192.168.2.105:3000'+temp.img" alt="" style=" margin-top:40px;">
+                  <img :src="'http://192.168.2.109:3000'+temp.img" alt="" style=" margin-top:40px;">
                   <span >{{temp.name}}</span>
                   <img src="../../assets/image/hs_new.png" class="imgNew" alt="">
                   <i v-if="temp.status==0">即将上架</i>
