@@ -258,7 +258,9 @@ export default {
         .then(identity => {
           //1. 用户授权完成后，获取用户的EOS帐号名字（12位长度），传给后台完成登录or注册操作操作
           account = identity.accounts.find(acc => acc.blockchain === "eos");
-          this.getAccount(account).then(res => {});
+          this.getAccount(account).then(res => {
+            
+          });
           console.log(
             "1. 用户授权完成后，获取用户信息，提交给后台完成用户登录or注册",
             identity
@@ -279,7 +281,6 @@ export default {
               let data = res.data;
               if (data.code == 200) {
                 this.getIdentity(data.data).then(res => {});
-                console.log(this.$socket.close());
                 this.$socket.close();
                 this.$socket.open("ws://192.168.2.105:9999");
               } else {
@@ -290,7 +291,6 @@ export default {
               }
             })
             .catch(err => {
-              console.log(err);
             });
         })
         .catch(e => {

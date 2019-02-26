@@ -167,11 +167,23 @@
                                     <strong>Coins</strong>
                                 </dd>
                                 <dt>{{$t('MultipleSettlement')}}</dt>
-                                <dd class="hs_main_right_top_right_main_2">
+                                <!-- <dd class="hs_main_right_top_right_main_2">
                                     <input type="text" :placeholder="pleaseInput" v-model.number="multiple" style="color:#fff">
                                     <strong>X</strong>
-                                    <!-- disabled="BbetsIsClick" -->
                                     <el-button :disabled="Bbets" :style="{background:Bbets?'#fab6b6':'#3cb7d6'}"   @click="handleBets()">{{$t('ConfirmTheBet')}}</el-button>
+                                </dd> -->
+                                <dd class="hs_main_right_top_right_main_2">
+                                  <el-form :inline="true" :model="ruleForm" :rules="rules" ref="ruleForm"  class="demo-form-inline"
+                                    style="display:flex;flex-direction:row;align-items:center"
+                                  >
+                                    <el-form-item id="formInput" style="margin-bottom:0px" prop="Multiple">
+                                      <el-input  v-model.number="ruleForm.Multiple" placeholder="0"  style="color:#fff"></el-input>
+                                    </el-form-item>
+                                    <strong style="margin:0">X</strong>
+                                    <el-form-item style="margin-bottom:0px;flex-grow:1;display:flex;flex-direction:row;justify-content:flex-end;margin-right: 0px" >
+                                      <el-button  :disabled="Bbets" :style="{background:Bbets?'#fab6b6':'#3cb7d6'}" type="primary" @click="handleBets()">{{$t('ConfirmTheBet')}}</el-button>
+                                    </el-form-item>
+                                  </el-form>
                                 </dd>
                                 <dt class="hs_main_right_top_right_main_3">CHH{{$t('balance')}}：<span style="color:#3cb7d6">12.00</span><img src="../../assets/image/hs_help.png" alt=""></dt>
                                 <dd class="hs_main_right_top_right_main_4">*1EOS=1CHH</dd>
@@ -261,6 +273,19 @@ import { ENODATA } from "constants";
 import { formatDate } from "../../config/date";
 export default {
   data() {
+    var checkMultiple = (rule, value, callback) => {
+      console.log(this.OgameConfig)
+      if (!value) {
+        return callback(new Error("倍数必须存在"));
+      } else if (value < this.OgameConfig.minMultiple) {
+        return callback(new Error("倍数必须大于最小结算倍数"));
+      } else if (value > this.OgameConfig.maxMultiple) {
+        return callback(new Error("倍数必须小于最大结算倍数"));
+      } else {
+        callback();
+      }
+    };
+
     return {
       oGameRule: {},
       bSelect1: true,
@@ -279,13 +304,46 @@ export default {
       xx: new Set(),
       gameLogData: [],
       playerData: [], //玩家下注信息
-      selfPlayData: []
+      selfPlayData: [],
+      Apointer: [],
+      OgameConfig: {
+        game_id: 1,
+        currencyName: null,
+        rechargeRatio: null,
+        minMultiple: null,
+        maxMultiple: null,
+        minBets: 0,
+        maxBets: 0,
+        playerCountMax: null,
+        reward: null,
+        escape: null
+      },
+      ruleForm: {},
+      rules: {
+        Multiple: [{ validator: checkMultiple, trigger: "blur" }]
+      }
     };
   },
   computed: {
     ...mapGetters(["account"])
   },
   methods: {
+    /**
+     * 表单验证
+     */
+    submitForm(formName) {
+      this.$refs[formName].validate(valid => {
+        if (valid) {
+          alert("submit!");
+        } else {
+          console.log("error submit!!");
+          return false;
+        }
+      });
+    },
+    resetForm(formName) {
+      this.$refs[formName].resetFields();
+    },
     /**
      * 獲取對於 語種的最後一個游戲規則
      */
@@ -308,10 +366,10 @@ export default {
     calculate(val) {
       switch (val) {
         case "min":
-          this.bets = 0.1;
+          this.bets = this.OgameConfig.minBets;
           break;
         case "max":
-          this.bets = 0;
+          this.bets = this.OgameConfig.maxBets;
           break;
         default:
           this.bets *= val;
@@ -347,6 +405,7 @@ export default {
       //   console.log(res.data);
       // });
       var account = this.account;
+      console.log(account);
       const eosOptions = {
         broadcast: true,
         chainId:
@@ -495,7 +554,7 @@ export default {
             type: "line",
             showSymbol: false,
             smooth: true,
-            data: myRegression.points,
+            data: this.Apointer,
             itemStyle: {
               normal: {
                 lineStyle: {
@@ -512,25 +571,29 @@ export default {
       // myRegression.points.unshift([0, 1.0]);
     },
     drawLine(x, z) {
-      var a = [[0, 1.0], [(x[0] - 0) / 2, (x[1] - 1.0) / 2], [x[0], x[1]]];
-      /**
-       * 这边写一个公式 来解决数据的曲线
-       * ecstat公式
-       */
-      var myRegression = ecStat.regression("exponential", a);
-      // var myRegression = ecStat.regression("exponential", x);
-      myRegression.points.sort(function(a, b) {
-        return a[0] - b[0];
-      });
-      var num = myRegression.points[myRegression.points.length - 1][0];
-      var max = myRegression.points[myRegression.points.length - 1][1];
-      if (num < 9) {
-        for (var i = 0; i < parseInt(9 - num); i++) {
-          myRegression.points.push([parseInt(num) + i + 2]);
+      // var a = [[0, 1.0], [(x[0] - 0) / 2, (x[1] - 1.0) / 2], [x[0], x[1]]];
+      // /**
+      //  * 这边写一个公式 来解决数据的曲线
+      //  * ecstat公式
+      //  */
+      // var myRegression = ecStat.regression("exponential", a);
+      // // var myRegression = ecStat.regression("exponential", x);
+      // myRegression.points.sort(function(a, b) {
+      //   return a[0] - b[0];
+      // });
+
+      var currentPointer = JSON.parse(JSON.stringify(this.Apointer));
+      if (currentPointer.length > 0) {
+        var num = currentPointer[currentPointer.length - 1][0];
+        // var max = myRegression.points[myRegression.points.length - 1][1];
+        if (num < 9) {
+          for (var i = 0; i < parseInt(9 - num); i++) {
+            currentPointer.push([parseInt(num) + i + 2]);
+          }
         }
       }
-      myRegression.points.shift();
-      myRegression.points.unshift([0, 1.0]);
+      // myRegression.points.shift();
+      // myRegression.points.unshift([0, 1.0]);
       this.myChart1.setOption({
         tooltip: {
           trigger: "axis",
@@ -578,7 +641,7 @@ export default {
           //纵轴标尺固定
           type: "value",
           name: "销量",
-          max: 1.9,
+          // max: 1.9,
           min: 1.0,
           boundaryGap: false,
           splitNumber: 8,
@@ -604,7 +667,7 @@ export default {
             type: "line",
             showSymbol: false,
             smooth: true,
-            data: myRegression.points,
+            data: currentPointer,
             itemStyle: {
               normal: {
                 lineStyle: {
@@ -628,7 +691,6 @@ export default {
         y1.push(v.bets_sm);
         y2.push(v.multiple);
         x.push(formatDate(v.start_time * 1000));
-        console.log(formatDate(v.start_time * 1000));
       });
       this.myChart2.setOption({
         // backgroundColor: "rgba(43, 62, 75, 0.5)", //背景颜色
@@ -751,6 +813,7 @@ export default {
       this.drawLine([0, 0], false);
       this.BCountdown = 1;
       this.BgameLog = true;
+      this.Apointer.length = 0;
       if (val.type == "bets") {
         var str = "游戏下注时间，倒计时：" + val.times;
         //   console.log(str);
@@ -774,6 +837,7 @@ export default {
         var max = data.data[1];
         this.Countdown = max;
         var OyAxis;
+        this.Apointer.push([data.data[0], Number(data.data[1])]);
         if (max > 1.9) {
           OyAxis = true;
           this.drawLine2(data.data, OyAxis);
@@ -815,7 +879,6 @@ export default {
           }
         }, 100);
       } else {
-        console.log(data.type);
         //   this.$socket.emit(data.type);
       }
     },
@@ -826,6 +889,7 @@ export default {
       this.playerData = [];
 
       this.BCountdown = 3;
+      this.Countdown = data.crashCrash;
       if (data.type == "over") {
         // $("#socket_conn").html(str);
         var startTime = 1;
@@ -848,6 +912,7 @@ export default {
       if (this.BgameLog) {
         this.$socket.emit("gameLog");
         this.$socket.emit("myGameLog");
+        this.$socket.emit("gameConfig");
         this.BgameLog = false;
       }
       if (data.type == "start") {
@@ -880,16 +945,22 @@ export default {
     玩家历史记录
      */
     myGameLog(data) {
-      console.log(JSON.stringify(data));
       this.selfPlayData = data.myGameLog;
     },
     /**
      * 得到爆点历史记录
      */
     gameLog(data) {
-      console.log("爆点历史记录" + data);
       this.gameLogData = data.gameLogData;
       this.drawLineRow();
+    },
+    /**
+     * 得到游戏信息
+     */
+    gameConfig(data) {
+      this.OgameConfig = JSON.parse(data.data.config);
+      this.OgameConfig.game_id = data.data.game_id;
+      console.log(this.OgameConfig);
     }
   },
   updated() {
@@ -1165,6 +1236,18 @@ export default {
             }
             .hs_main_right_top_right_main_2 {
               input {
+                text-align: center;
+                width: 100px;
+                color: #65666f;
+                -web-kit-appearance: none;
+
+                -moz-appearance: none;
+                border: none;
+                outline: 0;
+                background-color: transparent;
+                border-bottom: 1px solid #65666f;
+              }
+              #formInput input {
                 text-align: center;
                 width: 100px;
                 color: #65666f;
@@ -2099,5 +2182,18 @@ export default {
 }
 #main .popper__arrow {
   color: #303547;
+}
+#formInput input {
+  text-align: center;
+  width: 100px;
+  color: #65666f;
+  -web-kit-appearance: none;
+
+  -moz-appearance: none;
+  border: none;
+  outline: 0;
+  background-color: transparent;
+  border-bottom: 1px solid #65666f;
+  color: #fff;
 }
 </style>

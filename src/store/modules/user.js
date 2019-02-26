@@ -6,7 +6,7 @@ const state = {
   Identity: sessionStorage.getItem('HS_Identity'),
   isLogin: false,
   language: sessionStorage.getItem('HS_Language'),
-  account: {name:'213',authority:'21312'}
+  account: sessionStorage.getItem('HS_Account')
 }
 
 // 定义getters
@@ -24,6 +24,9 @@ var getters = {
     return state.isLogin
   },
   account(state) {
+    if (!state.account) {
+      state.account = sessionStorage.getItem('HS_Account'); //从sessionStorage中读取状态  
+    }    
     return state.account
   },
   language(state) {
@@ -111,6 +114,7 @@ const actions = {
     commit,
     state
   }, account) {
+    console.log(account);
     return new Promise((resolve, reject) => {
       commit(types.SET_ACCOUNT, account);
       resolve();
@@ -145,7 +149,8 @@ const mutations = {
     state.language = language;
     sessionStorage.setItem('HS_Identity', state.language);
   },
-  [types.SET_ACCOUNT](state,account){
+  [types.SET_ACCOUNT](state, account) {
+    console.log(account)
     state.account = account;
     sessionStorage.setItem('HS_Account', state.account);
   }

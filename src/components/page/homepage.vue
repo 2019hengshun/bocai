@@ -86,6 +86,7 @@
 <script>
 import { httpGetGames } from "../../service/http";
 import { mapGetters, mapActions } from "vuex";
+var qs = require('qs');
 export default {
   data() {
     return {
