@@ -282,7 +282,7 @@ export default {
               if (data.code == 200) {
                 this.getIdentity(data.data).then(res => {});
                 this.$socket.close();
-                this.$socket.open("ws://192.168.2.105:9999");
+                this.$socket.open("ws://192.168.2.110:9999");
               } else {
                 this.$message({
                   message: data.msg,

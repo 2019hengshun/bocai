@@ -38,5 +38,6 @@ export default {
   HoldDividendsOrSellOutright: '持有分红或直接售出',
   nextRoundIn:'下一轮',
   Crashed:'爆炸啦，爆点为@',
-
+  escape:'逃跑',
+  hash:'哈希'
 }

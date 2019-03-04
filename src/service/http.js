@@ -4,7 +4,7 @@ var qs = require('qs');
 //axios 配置
 axios.defaults.timeout = 60000;
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = 'http://192.168.2.109:3000'
+axios.defaults.baseURL = 'http://192.168.2.110:3000'
 
 /**
  * 獲得語言和對於的圖標
@@ -140,6 +140,27 @@ export function httpGetUserTestcrash() {
   return axios({
     url: "/crash",
     method: "get",
+    withCredentials: true, //可以带cookie的认证
+    headers: {
+      'set-cookie': allCookies, //设置跨域头部
+    }
+  })
+}
+
+
+/**
+ * 获取游戏列表
+ * @param {*} id 
+ */
+export function httptransChanges(money) {
+  let datas = {
+    money
+  };
+  let allCookies = document.cookie
+  return axios({
+    url: "/trans/changes ",
+    method: "post",
+    data: qs.stringify(datas),
     withCredentials: true, //可以带cookie的认证
     headers: {
       'set-cookie': allCookies, //设置跨域头部

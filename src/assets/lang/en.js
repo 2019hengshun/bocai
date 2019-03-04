@@ -37,5 +37,7 @@ export default {
   getTokens: 'Get tokens',
   HoldDividendsOrSellOutright: 'Hold dividends or sell outright',
   nextRoundIn:'next round in',
-  Crashed:'Crashed@'
+  Crashed:'Crashed@',
+  escape:'escape',
+  hash:'hash'
 }
