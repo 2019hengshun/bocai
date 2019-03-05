@@ -3,7 +3,7 @@
             <div class="hs_main_left">
                 <div class="hs_main_left_nav">
                     <div :class="{hs_main_left_nav_hover:!bSelect1}" >
-                        <span @click="bSelect1 = false">{{$t('currentBetting')}}</span>
+                        <span @click="bSelect1 = false">{{$t('currentBetting')}}9999</span>
                         <i></i>
                     </div>
                     <div :class="{hs_main_left_nav_hover:bSelect1}">
@@ -126,12 +126,12 @@
                     </div>
                     <div class="hs_main_right_top_right">
                         <div class="hs_main_right_top_right_nav">
-                            <div class="hs_main_right_top_right_hover">
-                                <span>CHH</span>
+                            <div  :class="{hs_main_right_top_right_hover:!bSelect4}">
+                                <span  @click="bSelect4 = false,portsChange('game')">CHH</span>
                                 <i></i>
                             </div>
-                            <div id="oGameRule">
-                                <span>{{$t('OnsiteCurrency')}}</span>
+                            <div id="oGameRule"   :class="{hs_main_right_top_right_hover:bSelect4}">
+                                <span  @click="bSelect4 = true,portsChange('games')">{{$t('OnsiteCurrency')}}</span>
                                  <el-popover
                                    placement="bottom"
                                    :title="oGameRule.title"
@@ -300,6 +300,7 @@ import socketio from "socket.io-client";
 import Eos from "eosjs";
 import { mapGetters, mapActions } from "vuex";
 Vue.use(VueSocketio, socketio("ws://192.168.2.110:9999"));
+//Vue.use(VueSocketio, socketio("ws://192.168.2.110:9998"));
 import "../../config/deploy";
 import {
   httpRuleLastrule,
@@ -331,17 +332,21 @@ export default {
       }
     };
     var checkChh = (rule, value, callback) => {
-      let Anum = String(value).split(".");
-      var amount = false;
-      if (Anum.length > 1) {
-        Anum[1].length > 3 ? (amount = false) : (amount = true);
+      if (typeof value == "number") {
+        let Anum = String(value).split(".");
+        var amount = false;
+        if (Anum.length > 1) {
+          Anum[1].length > 3 ? (amount = false) : (amount = true);
+        } else {
+          amount = true;
+        }
+        if (amount) {
+          callback();
+        } else {
+          return callback(new Error("购买的EOS币最多有四位小数"));
+        }
       } else {
-        amount = true;
-      }
-      if (amount) {
-        callback();
-      } else {
-        return callback(new Error("购买的EOS币最多有四位小数"));
+        return callback(new Error("请输入数字"));
       }
     };
     return {
@@ -349,6 +354,7 @@ export default {
       bSelect1: false,
       bSelect2: true,
       bSelect3: true,
+      bSelect4: false,
       BgameLog: true,
       BgameLogs: true,
       dialogVisible: false,
@@ -399,7 +405,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["account", "isLogin"]),
+    ...mapGetters(["account", "isLogin", "port"]),
     currentEos() {
       console.log(this.ruleForm2.chh);
       if (this.ruleForm2.chh) {
@@ -427,6 +433,27 @@ export default {
     }
   },
   methods: {
+    portsChange(val) {
+      this.changePort(9999);
+      var route = this.$route.path.split("/")[2];
+      console.log("9999这是" + val);
+      if (val == "game" && route != "game") {
+        this.$router.push("/index/game");
+      } else if (val == "games" && route != "games") {
+        this.$router.push("/index/games");
+      }
+      this.$socket.emit("currentCrashData", { current: true });
+      this.$socket.emit("gameLog");
+      this.$socket.emit("gameConfig");
+      if (this.isLogin) {
+        this.$socket.emit("myGameLog", { page: 1 });
+        this.$socket.emit("getBalance");
+      }
+    },
+    changePorts(val) {
+      this.portsChange(val);
+    },
+    ...mapActions(["changePort"]),
     /**
      * 立即提现
      */
@@ -472,49 +499,29 @@ export default {
      * 基础下注倍数
      */
     calculate(val) {
-      console.log(
-        typeof val,
-        this.bets * val,
-        JSON.stringify(this.OgameConfig)
-      );
-      if (
-        typeof val == "number" &&
-        this.bets * val > this.OgameConfig.maxBets
-      ) {
-        console.log(1);
-        this.bets = this.OgameConfig.maxBets;
-      } else if (
-        typeof val == "number" &&
-        this.bets * val > this.OgameConfig.minBets
-      ) {
-        console.log(2);
-        this.bets = this.OgameConfig.minBets;
-      } else {
-        console.log(3);
-        switch (val) {
-          case "min":
-            this.bets = this.OgameConfig.minBets;
-            break;
-          case "max":
-            this.bets = this.OgameConfig.maxBets;
-            break;
-          // case 2:
-          //   this.bets = 2;
-          //   break;
-          // case 4:
-          //   this.bets = 4;
-          //   break;
-          // case 10:
-          //   this.bets = 10;
-          //   break;
-          // case 20:
-          //   this.bets = 20;
-          //   break;
-          default:
-            this.bets *= val;
-            break;
+      let num = this.bets;
+      switch (val) {
+        case "min":
+          num = this.OgameConfig.minBets;
+          break;
+        case "max":
+          num = this.OgameConfig.maxBets;
+          break;
+        default:
+          console.log(val);
+          num *= val;
+          break;
+      }
+      let nums = num * val;
+      if (typeof val == "number") {
+        if (nums > this.OgameConfig.maxBets) {
+          num = this.OgameConfig.maxBets;
+        } else if (nums < this.OgameConfig.minBets) {
+          num = this.OgameConfig.minBets;
         }
       }
+
+      this.bets = num;
     },
     /**
      * 确认下注确认 下注
@@ -584,7 +591,7 @@ export default {
                 message: data.msg,
                 type: "success"
               });
-              this.dialogVisible1 = true;
+              this.dialogVisible1 = false;
             } else {
               this.$message({
                 message: data.msg,
@@ -598,9 +605,6 @@ export default {
       });
     },
     handleBets2() {
-      // httpGetUserTest().then(res => {
-      //   console.log(res.data);
-      // });
       this.$refs["ruleForm2"].validate(valid => {
         if (valid) {
           var account = this.account;
@@ -654,11 +658,18 @@ export default {
               );
               console.log("现在奖池里有");
               res1.then(res => {
-                console.log(res);
+                this.$message({
+                  message: "充值成功,您现在有" + res[0],
+                  type: "success"
+                });
+                this.dialogVisible = false;
               });
             })
             .catch(error => {
-              console.error(error);
+              this.$message({
+                message: "充值失败",
+                type: "error"
+              });
             });
         } else {
           return false;
@@ -688,7 +699,6 @@ export default {
       //   console.log(currentPointer[0]);
       //   currentPointer.unshift([0, 1.0]);
       // }
-      console.log(this.Apointer);
       var maxX = this.Apointer[this.Apointer.length - 1][0] + 2;
       var maxY = this.Apointer[this.Apointer.length - 1][1];
       this.myChart1.setOption({
@@ -1088,6 +1098,7 @@ export default {
      * 等待开奖
      */
     waiting(data) {
+      console.log("等待开奖9999");
       this.Nbets = 2;
       if (data.type == "waiting") {
         this.xData.length = 0;
@@ -1174,9 +1185,7 @@ export default {
         this.playerData = [];
         this.BgameLogs = false;
       }
-      console.log("玩家投注信息" + JSON.stringify(data));
       this.playerData = data.playerData;
-      console.log(data.bonusPool);
       this.currentbonusPool = data.bonusPool;
       if (data.playerData[0]) {
         console.log(data.playerData[0]["profit"]);
@@ -1193,7 +1202,6 @@ export default {
         });
       }
       this.pageCount = data.pageCount;
-      console.log("  玩家历史记录" + JSON.stringify(data));
     },
     /**
      * 得到爆点历史记录
@@ -1217,7 +1225,6 @@ export default {
       this.OgameConfig.game_id = data.data.game_id;
 
       this.currentbonusPool = data.data.config.bonusPool;
-      console.log(data.data.escape);
     },
     /**
      * getBalance得到用户余额
@@ -1231,14 +1238,12 @@ export default {
      * escape 逃跑
      */
     escape(data) {
-      console.log("逃跑");
       this.Nbets = 1;
     },
     /**
      *
      */
     currentCrashData(data) {
-      console.log(JSON.stringify(data));
       if (data.code == 200) {
         this.Apointer = JSON.parse(JSON.stringify(data.crashData));
       }
@@ -1249,22 +1254,20 @@ export default {
     this.pleaseInput = this.$t("pleaseInput");
   },
   mounted() {
+    this.portsChange("game");
     this._httpRuleLastrule(1, 1);
-    this.$socket.emit("currentCrashData", { current: true });
     this.myChart2 = echarts.init(document.querySelector(".echart2"));
     this.myChart1 = echarts.init(document.querySelector(".echart1"));
-
     window.onresize = () => {
       this.myChart2.resize();
       this.myChart1.resize();
     };
-    if (this.isLogin) {
-      this.$socket.emit("gameLog");
-      this.$socket.emit("myGameLog", { page: 1 });
-
-      this.$socket.emit("getBalance");
+  },
+  beforeDestroy() {
+    if (this.$socket) {
+      console.log("关闭");
+      this.$socket.close();
     }
-    this.$socket.emit("gameConfig");
   }
 };
 </script>
@@ -1451,6 +1454,7 @@ export default {
           height: 50px;
           & > div {
             position: relative;
+            cursor: pointer;
           }
           img {
             position: absolute;
@@ -1847,6 +1851,7 @@ export default {
             height: 50px;
             & > div {
               position: relative;
+              cursor: pointer;
             }
             img {
               position: absolute;
@@ -2169,7 +2174,8 @@ export default {
         flex-direction: column;
         .hs_main_right_top_left {
           width: 100%;
-          height: 550px;
+          height: 320px;
+          //height:550px;
           margin-top: 50px;
           display: flex;
           flex-direction: column;
@@ -2223,7 +2229,7 @@ export default {
         }
         .hs_main_right_top_right {
           height: 550px;
-          margin-top: 50px;
+          margin-top: 10px;
           background: #232436;
           .hs_main_right_top_right_nav {
             font-size: 14px;
@@ -2236,6 +2242,7 @@ export default {
             height: 50px;
             & > div {
               position: relative;
+              cursor: pointer;
             }
             img {
               position: absolute;
@@ -2371,7 +2378,8 @@ export default {
       }
       .hs_main_right_botom {
         width: 100%;
-        height: 605px;
+        // height: 605px;
+        height: 405px;
         margin-top: 50px;
         background: #232436;
         .hs_main_right_botom_nav {
@@ -2508,6 +2516,12 @@ export default {
 }
 @media (max-width: 576px) {
   #input .el-pagination.is-background .btn-prev {
+    min-width: 15px;
+  }
+  #input .el-pagination.is-background .el-pager li {
+    min-width: 20px;
+  }
+  #input .el-pagination.is-background .btn-next {
     min-width: 15px;
   }
 }

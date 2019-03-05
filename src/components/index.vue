@@ -6,8 +6,8 @@
           </div>
           <div class="hs_menu">
             <ul>
-              <li :class="{liHover:bRouter}" @click="handleRouter('/index/home'),bRouter=!bRouter"><img src="../assets/image/hs_sy_1.png" alt="" ><span>{{$t('home')}}</span></li>
-              <li :class="{liHover:!bRouter}" @click="handleRouter('/index/game'),bRouter=!bRouter"><img src="../assets/image/hs_bd.png" alt=""><span>{{$t('blister')}}</span></li>
+              <li :class="{liHover:routers=='home'}" @click="handleRouter('/index/home'),bRouter=!bRouter"><img src="../assets/image/hs_sy_1.png" alt="" ><span>{{$t('home')}}</span></li>
+              <li :class="{liHover:routers=='game'||routers=='games'}" @click="handleRouter('/index/game'),bRouter=!bRouter"><img src="../assets/image/hs_bd.png" alt=""><span>{{$t('blister')}}</span></li>
             </ul>
           </div>
           <div class="hx_center">
@@ -197,7 +197,11 @@ export default {
     this.beComingSoonL = this.$t("beComingSoon");
   },
   computed: {
-    ...mapGetters(["Identity", "isLogin", "language"])
+    ...mapGetters(["Identity", "isLogin", "language", "port"]),
+    routers() {
+      var route = this.$route.path.split("/")[2];
+      return route;
+    }
   },
   methods: {
     ...mapActions(["getIdentity", "forgetIdentity", "changeLan", "getAccount"]),
@@ -251,6 +255,7 @@ export default {
     _getIdentity() {
       let id = "";
       let account;
+      console.log(1);
       scatter
         .getIdentity({
           accounts: [network]
@@ -258,9 +263,7 @@ export default {
         .then(identity => {
           //1. 用户授权完成后，获取用户的EOS帐号名字（12位长度），传给后台完成登录or注册操作操作
           account = identity.accounts.find(acc => acc.blockchain === "eos");
-          this.getAccount(account).then(res => {
-            
-          });
+          this.getAccount(account).then(res => {});
           console.log(
             "1. 用户授权完成后，获取用户信息，提交给后台完成用户登录or注册",
             identity
@@ -281,8 +284,11 @@ export default {
               let data = res.data;
               if (data.code == 200) {
                 this.getIdentity(data.data).then(res => {});
+
                 this.$socket.close();
-                this.$socket.open("ws://192.168.2.110:9999");
+                // this.$socket.open("ws://192.168.2.110:9999");
+                console.log(this.port);
+                this.$socket.open("ws://192.168.2.110:9999" );
               } else {
                 this.$message({
                   message: data.msg,
@@ -290,8 +296,7 @@ export default {
                 });
               }
             })
-            .catch(err => {
-            });
+            .catch(err => {});
         })
         .catch(e => {
           console.log("error", e);
@@ -386,7 +391,10 @@ export default {
   mounted() {
     this._httpGetNotice(1);
     this.getAllLangugae();
-
+    console.log(this.$route.path);
+    if (this.isLogin) {
+      this._getIdentity();
+    }
     // .res("message", res => {
     //   let data = res;
     //   console.log(res);

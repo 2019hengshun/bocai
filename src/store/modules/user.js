@@ -4,13 +4,20 @@ import types from "./../types"
 const state = {
   count: 5,
   Identity: sessionStorage.getItem('HS_Identity'),
-  isLogin: false,
+  isLogin: sessionStorage.getItem('HS_isLogin'),
   language: sessionStorage.getItem('HS_Language'),
-  account: sessionStorage.getItem('HS_Account')
+  account: sessionStorage.getItem('HS_Account'),
+  port: sessionStorage.getItem('HS_Port')
 }
 
 // 定义getters
 var getters = {
+  port(state) {
+    if (!state.port) {
+      state.port = sessionStorage.getItem('HS_Port'); //从sessionStorage中读取状态  
+    }
+    return state.port
+  },
   count(state) {
     return state.count
   },
@@ -21,12 +28,15 @@ var getters = {
     return state.Identity
   },
   isLogin(state) {
+    if (!state.isLogin) {
+      state.account = sessionStorage.getItem('HS_isLogin'); //从sessionStorage中读取状态  
+    }
     return state.isLogin
   },
   account(state) {
     if (!state.account) {
       state.account = sessionStorage.getItem('HS_Account'); //从sessionStorage中读取状态  
-    }    
+    }
     return state.account
   },
   language(state) {
@@ -122,6 +132,19 @@ const actions = {
       console.log(err)
       // reject(err);
     })
+  },
+  changePort({
+    commit,
+    state
+  }, port) {
+    console.log(port)
+    return new Promise((resolve, reject) => {
+      commit(types.SET_PORT, port);
+      resolve();
+    }).catch(err => {
+      console.log(err)
+      // reject(err);
+    })
   }
 }
 
@@ -139,10 +162,12 @@ const mutations = {
   [types.IDENTITY](state, Identity) {
     state.Identity = Identity;
     state.isLogin = true;
+    sessionStorage.setItem('HS_isLogin', true);
     sessionStorage.setItem('HS_Identity', state.Identity);
   },
   [types.FORGETIDENTITY](state) {
     state.isLogin = false;
+    sessionStorage.setItem('HS_isLogin', false);
     sessionStorage.removeItem('HS_Identity');
   },
   [types.SET_LANGUAGE](state, language) {
@@ -153,6 +178,11 @@ const mutations = {
     console.log(account)
     state.account = account;
     sessionStorage.setItem('HS_Account', state.account);
+  },
+  [types.SET_PORT](state, port) {
+    console.log(port + '111111')
+    state.port = port;
+    sessionStorage.setItem('HS_Port', state.port);
   }
 }
 // const mutations ={

@@ -5,6 +5,7 @@ var qs = require('qs');
 axios.defaults.timeout = 60000;
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = 'http://192.168.2.110:3000'
+//axios.defaults.baseURL = 'http://192.168.2.110:9998'
 
 /**
  * 獲得語言和對於的圖標

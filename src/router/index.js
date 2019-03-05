@@ -23,6 +23,10 @@ export default new Router({
           path: 'game',
           component: resolve => require(['@/components/page/baodian'], resolve),
         },
+        {
+          path: 'games',
+          component: resolve => require(['@/components/page/instation'], resolve),
+        },        
       ]
     },
     {
